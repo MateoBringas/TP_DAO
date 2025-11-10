@@ -20,3 +20,8 @@ Icon?
 *.swp
 *.swo
 *.tmp
+
+venv/
+__pycache__/
+app/database/database.db
+instance/
