@@ -1,0 +1,22 @@
+
+#ENV
+.env
+
+# Archivos del sistema macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icono del volumen y otros metadatos
+Icon?
+._*
+
+# Archivos temporales
+.Trashes
+.Spotlight-V100
+.fseventsd
+
+# Archivos de la papelera o cache
+*.swp
+*.swo
+*.tmp
