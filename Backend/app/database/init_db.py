@@ -101,6 +101,7 @@ try:
         cliente_id INTEGER NOT NULL,
         empleado_id INTEGER NULL,
         estado_alquiler_id INTEGER NOT NULL,
+        reserva_id INTEGER NULL,
         fecha_inicio DATE NOT NULL,
         fecha_fin_prevista DATE NOT NULL,
         fecha_fin_real DATE NULL,
@@ -113,6 +114,7 @@ try:
         FOREIGN KEY (vehiculo_id) REFERENCES vehiculos(id_vehiculo),
         FOREIGN KEY (cliente_id) REFERENCES clientes(id_cliente),
         FOREIGN KEY (empleado_id) REFERENCES empleados(id_empleado),
+        FOREIGN KEY (reserva_id) REFERENCES reservas(id_reserva),
         FOREIGN KEY (estado_alquiler_id) REFERENCES estados_alquiler(id_estado_alq)
     );
 

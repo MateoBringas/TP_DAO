@@ -1,11 +1,11 @@
 class Alquiler:
-    def __init__(self, cliente, vehiculo, empleado, reserva=None, estado_alquiler_id=None, fecha_inicio=None, fecha_fin=None, km_inicio=0, km_fin=None, monto_total=0, actualizado_en=None, id_alquiler=None ):
+    def __init__(self, cliente, vehiculo, empleado, estado_alquiler, reserva=None, fecha_inicio=None, fecha_fin=None, km_inicio=0, km_fin=None, monto_total=0, actualizado_en=None, id_alquiler=None ):
         self.id_alquiler = id_alquiler
         self.cliente = cliente
         self.vehiculo = vehiculo
         self.empleado = empleado
         self.reserva = reserva
-        self.estado_alquiler_id = estado_alquiler_id
+        self.estado_alquiler = estado_alquiler
         self.fecha_inicio = fecha_inicio
         self.fecha_fin = fecha_fin
         self.km_inicio = km_inicio
@@ -20,7 +20,7 @@ class Alquiler:
             "vehiculo_id": self.vehiculo.id_vehiculo if self.vehiculo else None,
             "empleado_id": self.empleado.id_empleado if self.empleado else None,
             "reserva_id": self.reserva.id_reserva if self.reserva else None,
-            "estado_alquiler_id": self.estado_alquiler_id,
+            "estado_alquiler": self.estado_alquiler if self.estado_alquiler else None,
             "fecha_inicio": self.fecha_inicio,
             "fecha_fin": self.fecha_fin,
             "km_inicio": self.km_inicio,
