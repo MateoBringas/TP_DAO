@@ -11,6 +11,5 @@ class EstadoReserva:
     @classmethod
     def from_dict(cls, data):
         return cls(
-            codigo=data.get("codigo"),
-            id_estado_reserva=data.get("id_estado_reserva")
+            codigo=data.get("codigo")
         )

@@ -7,8 +7,8 @@ class Cliente:
         self.email = email
         self.telefono = telefono
         self.direccion = direccion
-        self.licencia_num = licencia_num
-        self.licencia_venc = licencia_venc
+        self.licencia_num = licencia_num #Opcional
+        self.licencia_venc = licencia_venc #Cuando quiera alquilar, hay que validar que no este vencida y que este habilitado.
         self.habilitado = habilitado
 
     def to_dict(self):

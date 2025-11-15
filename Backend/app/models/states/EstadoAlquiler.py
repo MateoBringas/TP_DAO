@@ -11,5 +11,5 @@ class EstadoAlquiler:
     @classmethod
     def from_dict(cls, data):
         return cls(
-            codigo=data.get("codigo"),
+            codigo=data.get("codigo")
         )

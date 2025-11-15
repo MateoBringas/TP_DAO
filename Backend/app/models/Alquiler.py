@@ -1,5 +1,5 @@
-class Alquiler:
-    def __init__(self, cliente, vehiculo, empleado, estado_alquiler, reserva=None, fecha_inicio=None, fecha_fin=None, km_inicio=0, km_fin=None, monto_total=0, actualizado_en=None, id_alquiler=None ):
+class Alquiler: #Posible mejora: Crear una clase Abstracta para manejar los create y actualizado.
+    def __init__(self, cliente, vehiculo, empleado, estado_alquiler, creado_en, reserva=None, fecha_inicio=None, fecha_fin=None, km_inicio=0, km_fin=None, monto_total=0, observaciones=None, actualizado_en=None, id_alquiler=None ):
         self.id_alquiler = id_alquiler
         self.cliente = cliente
         self.vehiculo = vehiculo
@@ -10,7 +10,9 @@ class Alquiler:
         self.fecha_fin = fecha_fin
         self.km_inicio = km_inicio
         self.km_fin = km_fin
-        self.monto_total = monto_total
+        self.monto_total = monto_total #Tener en cuenta las infracciones si no las cubre el seguro.
+        self.observaciones = observaciones,
+        self.creado_en = creado_en,
         self.actualizado_en = actualizado_en
 
     def to_dict(self):
@@ -26,6 +28,8 @@ class Alquiler:
             "km_inicio": self.km_inicio,
             "km_fin": self.km_fin,
             "monto_total": self.monto_total,
+            "observaciones": self.observaciones,
+            "creado_en": self.creado_en,
             "actualizado_en": self.actualizado_en,
         }
 
@@ -42,6 +46,8 @@ class Alquiler:
             km_inicio=data.get("km_inicio", 0),
             km_fin=data.get("km_fin"),
             monto_total=data.get("monto_total", 0),
+            observaciones=data.get("observaciones"),
+            creado_en=data.get("creado_en"),
             actualizado_en=data.get("actualizado_en"),
             id_alquiler=data.get("id_alquiler"),
         )

@@ -5,14 +5,14 @@ class Vehiculo:
         self.marca = marca
         self.modelo = modelo
         self.anio = anio
-        self.tarifa_base_dia = tarifa_base_dia
+        self.tarifa_base_dia = tarifa_base_dia #Precio por dia.
         self.km_actual = km_actual
         self.habilitado = habilitado
-        self.seguro_venc = seguro_venc
-        self.vtv_venc = vtv_venc
-        self.km_service_cada = km_service_cada
-        self.km_ultimo_service = km_ultimo_service
-        self.fecha_ultimo_service = fecha_ultimo_service
+        self.seguro_venc = seguro_venc #Opcional 
+        self.vtv_venc = vtv_venc #Opcional
+        self.km_service_cada = km_service_cada 
+        self.km_ultimo_service = km_ultimo_service #Calcular con el km_actual al momento de hacer el service (Mantenimiento).
+        self.fecha_ultimo_service = fecha_ultimo_service #Opcional
 
     def to_dict(self):
         return {
