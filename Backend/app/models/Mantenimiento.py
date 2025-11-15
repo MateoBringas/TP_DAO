@@ -33,6 +33,6 @@ class Mantenimiento:
             fecha_realizada=data.get("fecha_realizada"),
             km=data.get("km", 0),
             costo=data.get("costo", 0),
-            notas=data.get("observacion"),
+            observacion=data.get("observacion"),
             id_mantenimiento=data.get("id_mantenimiento")
         )
