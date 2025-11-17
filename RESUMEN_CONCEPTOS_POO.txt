@@ -1,0 +1,219 @@
+================================================================================
+  RESUMEN RAPIDO - CONCEPTOS DE POO IMPLEMENTADOS
+  Materia: Desarrollo de Aplicaciones con Objetos
+================================================================================
+
+📍 UBICACION DE CADA CONCEPTO EN EL CODIGO
+================================================================================
+
+1. HERENCIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 Backend/app/repository/BaseRepository.py (líneas 18-80)
+   ┗━ Clase abstracta base para todos los repositorios
+   ┗━ VehiculoRepository, ClienteRepository heredan de esta
+
+📁 Backend/app/models/Persona.py (líneas 10-130)
+   ┗━ Clase abstracta para personas
+   ┗━ Cliente y Empleado heredan de Persona
+
+
+2. POLIMORFISMO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 Backend/app/models/strategies/TarifaStrategy.py (líneas 35-160)
+   ┗━ Método calcular() implementado diferente en cada clase:
+      • TarifaSimple.calcular()
+      • TarifaConDescuentoSemanal.calcular()
+      • TarifaPorKilometraje.calcular()
+      • TarifaPremium.calcular()
+
+📁 Backend/app/models/*.py
+   ┗━ Método to_dict() en cada modelo (Cliente, Vehiculo, Alquiler, etc.)
+
+
+3. ABSTRACCION (Clases Abstractas)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 Backend/app/repository/BaseRepository.py (línea 18)
+   ┗━ class BaseRepository(ABC, Generic[T]):
+
+📁 Backend/app/models/Persona.py (línea 10)
+   ┗━ class Persona(ABC):
+
+📁 Backend/app/models/strategies/TarifaStrategy.py (línea 14)
+   ┗━ class TarifaStrategy(ABC):
+
+
+4. ENCAPSULAMIENTO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 Backend/app/models/Persona.py (líneas 25-65)
+   ┗━ Atributos privados: self._nombre, self._apellido
+   ┗━ Properties (getters):
+      @property
+      def nombre(self) -> str:
+          return self._nombre
+
+   ┗━ Setters con validación:
+      @nombre.setter
+      def nombre(self, valor: str):
+          if not valor or valor.strip() == "":
+              raise ValueError("El nombre no puede estar vacío")
+          self._nombre = valor.strip()
+
+
+5. COMPOSICION (Relación HAS-A)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 Backend/app/models/strategies/TarifaStrategy.py (líneas 165-195)
+   ┗━ class CalculadoraTarifa:
+          def __init__(self, estrategia: TarifaStrategy):
+              self._estrategia = estrategia  # TIENE-UN TarifaStrategy
+
+
+6. STRATEGY PATTERN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 Backend/app/models/strategies/TarifaStrategy.py (TODO el archivo)
+
+   Estructura:
+   ┌─────────────────────┐
+   │  TarifaStrategy     │ (interfaz abstracta)
+   └──────────┬──────────┘
+              │
+      ┌───────┴──────┬──────────────┬─────────────┐
+      │              │              │             │
+   ┌──▼──┐    ┌─────▼────┐   ┌─────▼───┐   ┌────▼─────┐
+   │Simple│    │Descuento │   │Kilometro│   │ Premium  │
+   │      │    │Semanal   │   │  traje  │   │          │
+   └──────┘    └──────────┘   └─────────┘   └──────────┘
+
+   Uso:
+   calculadora = CalculadoraTarifa(TarifaSimple())
+   monto = calculadora.calcular_monto(...)
+
+   # Cambiar estrategia dinámicamente
+   calculadora.cambiar_estrategia(TarifaPremium())
+
+
+7. FACTORY PATTERN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 Backend/app/models/factories/TarifaFactory.py (líneas 1-90)
+
+   class TarifaFactory:
+       @staticmethod
+       def crear_estrategia(tipo_tarifa: str, **kwargs):
+           if tipo_tarifa == 'simple':
+               return TarifaSimple()
+           elif tipo_tarifa == 'premium':
+               return TarifaPremium()
+           # ...
+
+   Uso:
+   estrategia = TarifaFactory.crear_estrategia('premium', costo_por_km=30)
+
+
+8. REPOSITORY PATTERN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 Backend/app/repository/ (todos los archivos)
+
+   BaseRepository (abstracto)
+        ├── VehiculoRepository
+        ├── ClienteRepository
+        ├── AlquilerRepository
+        └── ...
+
+   Beneficio: Separa lógica de negocio de acceso a datos
+
+
+================================================================================
+  EJEMPLOS EJECUTABLES
+================================================================================
+
+Para VER los conceptos en acción:
+
+   cd Backend
+   python ejemplos_poo.py
+
+Esto muestra:
+   ✓ Strategy Pattern funcionando
+   ✓ Factory Pattern creando objetos
+   ✓ Polimorfismo en acción
+   ✓ Composición vs Herencia
+   ✓ Casos de uso prácticos
+
+
+================================================================================
+  ARCHIVOS CLAVE PARA REVISION
+================================================================================
+
+Para la evaluación, revisar especialmente:
+
+1. Backend/app/repository/BaseRepository.py
+   → Herencia + Abstracción
+
+2. Backend/app/models/Persona.py
+   → Herencia + Encapsulamiento + Abstracción
+
+3. Backend/app/models/strategies/TarifaStrategy.py
+   → Strategy Pattern + Polimorfismo + Composición
+
+4. Backend/app/models/factories/TarifaFactory.py
+   → Factory Pattern
+
+5. Backend/ejemplos_poo.py
+   → Ejemplos de uso de todos los conceptos
+
+6. CONCEPTOS_POO.md
+   → Documentación completa con diagramas
+
+
+================================================================================
+  TESTING
+================================================================================
+
+Probar conceptos:
+
+   # Ver herencia y polimorfismo en acción
+   python Backend/ejemplos_poo.py
+
+   # Ver Repository Pattern funcionando
+   # (Usar la aplicación web en http://localhost:3000)
+
+
+================================================================================
+  DOCUMENTACION ADICIONAL
+================================================================================
+
+📖 CONCEPTOS_POO.md
+   → Explicación DETALLADA de cada concepto
+   → Diagramas de clases
+   → Ejemplos de código
+   → Líneas exactas de cada implementación
+
+📖 README.md
+   → Resumen general del proyecto
+   → Instrucciones de instalación
+   → Arquitectura del sistema
+
+📖 INSTRUCCIONES_EJECUCION.md
+   → Guía paso a paso para ejecutar el proyecto
+
+
+================================================================================
+  RESUMEN ULTRA-RAPIDO
+================================================================================
+
+HERENCIA:         BaseRepository.py (línea 18)
+POLIMORFISMO:     TarifaStrategy.py (líneas 35-160)
+ABSTRACCION:      Persona.py (línea 10), BaseRepository.py (línea 18)
+ENCAPSULAMIENTO:  Persona.py (líneas 25-65)
+COMPOSICION:      TarifaStrategy.py (línea 171)
+STRATEGY:         TarifaStrategy.py (TODO)
+FACTORY:          TarifaFactory.py (TODO)
+REPOSITORY:       BaseRepository.py + *Repository.py
+
+================================================================================
