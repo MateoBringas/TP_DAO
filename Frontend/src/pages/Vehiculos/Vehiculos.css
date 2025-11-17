@@ -63,6 +63,77 @@
   border-top: 1px solid var(--border-color);
 }
 
+/* Photo upload styles */
+.photo-upload-section {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.photo-upload-container {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.photo-preview {
+  flex-shrink: 0;
+}
+
+.photo-preview img {
+  width: 150px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+}
+
+.photo-upload-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-grow: 1;
+}
+
+.file-name {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  padding: 0.5rem;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+/* Table photo styles */
+.vehicle-photo-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.25rem;
+}
+
+.vehicle-thumbnail {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.no-photo {
+  width: 80px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  border: 1px dashed var(--border-color);
+}
+
 @media (max-width: 768px) {
   .page-header {
     flex-direction: column;
@@ -76,5 +147,14 @@
 
   .checkbox-group {
     grid-column: span 1;
+  }
+
+  .photo-upload-container {
+    flex-direction: column;
+  }
+
+  .vehicle-thumbnail, .no-photo {
+    width: 60px;
+    height: 45px;
   }
 }

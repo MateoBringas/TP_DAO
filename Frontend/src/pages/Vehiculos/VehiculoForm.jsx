@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Input from '../../components/common/Input'
 import Button from '../../components/common/Button'
+import api from '../../services/api'
 
 const VehiculoForm = ({ vehiculo, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -16,10 +17,14 @@ const VehiculoForm = ({ vehiculo, onSave, onCancel }) => {
     seguro_venc: '',
     vtv_venc: '',
     habilitado: true,
+    foto_url: '',
   })
 
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     if (vehiculo) {
@@ -36,7 +41,12 @@ const VehiculoForm = ({ vehiculo, onSave, onCancel }) => {
         seguro_venc: vehiculo.seguro_venc || '',
         vtv_venc: vehiculo.vtv_venc || '',
         habilitado: vehiculo.habilitado !== undefined ? vehiculo.habilitado : true,
+        foto_url: vehiculo.foto_url || '',
       })
+      // Establecer preview si existe foto
+      if (vehiculo.foto_url) {
+        setPreviewUrl(`http://localhost:5000${vehiculo.foto_url}`)
+      }
     }
   }, [vehiculo])
 
@@ -49,6 +59,55 @@ const VehiculoForm = ({ vehiculo, onSave, onCancel }) => {
     // Limpiar error del campo
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
+    }
+  }
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      // Validar tipo de archivo
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp']
+      if (!allowedTypes.includes(file.type)) {
+        alert('Solo se permiten archivos de imagen (PNG, JPG, GIF, WEBP)')
+        return
+      }
+
+      // Validar tamaño (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('El archivo no debe superar los 5MB')
+        return
+      }
+
+      setSelectedFile(file)
+      // Crear preview local
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const uploadPhoto = async () => {
+    if (!selectedFile) return null
+
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('foto', selectedFile)
+
+      const response = await api.post('/vehiculos/upload-foto', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+
+      return response.data.foto_url
+    } catch (error) {
+      console.error('Error al subir foto:', error)
+      throw new Error('Error al subir la foto')
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -74,6 +133,12 @@ const VehiculoForm = ({ vehiculo, onSave, onCancel }) => {
 
     setSubmitting(true)
     try {
+      // Subir foto primero si hay una seleccionada
+      let fotoUrl = formData.foto_url
+      if (selectedFile) {
+        fotoUrl = await uploadPhoto()
+      }
+
       const dataToSend = {
         ...formData,
         anio: parseInt(formData.anio),
@@ -81,6 +146,7 @@ const VehiculoForm = ({ vehiculo, onSave, onCancel }) => {
         km_actual: parseInt(formData.km_actual),
         km_service_cada: parseInt(formData.km_service_cada),
         km_ultimo_service: formData.km_ultimo_service ? parseInt(formData.km_ultimo_service) : 0,
+        foto_url: fotoUrl,
       }
 
       await onSave(dataToSend)
@@ -215,12 +281,42 @@ const VehiculoForm = ({ vehiculo, onSave, onCancel }) => {
         </div>
       </div>
 
+      <div className="photo-upload-section">
+        <label className="input-label">Foto del vehículo</label>
+        <div className="photo-upload-container">
+          {previewUrl && (
+            <div className="photo-preview">
+              <img src={previewUrl} alt="Preview" />
+            </div>
+          )}
+          <div className="photo-upload-controls">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              id="foto-input"
+              style={{ display: 'none' }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => document.getElementById('foto-input').click()}
+            >
+              {previewUrl ? 'Cambiar foto' : 'Seleccionar foto'}
+            </Button>
+            {selectedFile && (
+              <span className="file-name">{selectedFile.name}</span>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="form-actions">
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit" disabled={submitting}>
-          {submitting ? 'Guardando...' : 'Guardar'}
+        <Button type="submit" disabled={submitting || uploading}>
+          {uploading ? 'Subiendo foto...' : submitting ? 'Guardando...' : 'Guardar'}
         </Button>
       </div>
     </form>

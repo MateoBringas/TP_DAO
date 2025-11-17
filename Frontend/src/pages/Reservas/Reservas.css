@@ -1,0 +1,66 @@
+.reservas-page {
+  padding: 20px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #718096;
+}
+
+.error {
+  background-color: #fed7d7;
+  color: #c53030;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-success {
+  background-color: #c6f6d5;
+  color: #22543d;
+}
+
+.badge-danger {
+  background-color: #fed7d7;
+  color: #c53030;
+}
+
+.badge-warning {
+  background-color: #feebc8;
+  color: #c05621;
+}
+
+.badge-info {
+  background-color: #bee3f8;
+  color: #2c5282;
+}
+
+.badge-secondary {
+  background-color: #e2e8f0;
+  color: #4a5568;
+}

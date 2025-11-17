@@ -51,15 +51,15 @@ class ReservaRepository:
 
             for fila in filas:
                 reserva = Reserva(
-                    id_reserva=fila["id_reserva"],
-                    cliente_id=fila["cliente_id"],
-                    vehiculo_id=fila["vehiculo_id"],
-                    empleado_id=fila["empleado_id"],
-                    estado_reserva_id=fila["estado_reserva_id"],
+                    cliente=fila["cliente_id"],
+                    vehiculo=fila["vehiculo_id"],
+                    empleado=fila["empleado_id"],
+                    estado_reserva=fila["estado_reserva_id"],
                     fecha_reserva=fila["fecha_reserva"],
                     fecha_alquiler=fila["fecha_alquiler"],
                     senia_monto=fila["senia_monto"],
                     actualizado_en=fila["actualizado_en"],
+                    id_reserva=fila["id_reserva"]
                 )
                 reservas.append(reserva)
 

@@ -70,6 +70,22 @@ const Vehiculos = () => {
   }
 
   const columns = [
+    {
+      header: 'Foto',
+      render: (row) => (
+        <div className="vehicle-photo-cell">
+          {row.foto_url ? (
+            <img
+              src={`http://localhost:5000${row.foto_url}`}
+              alt={`${row.marca} ${row.modelo}`}
+              className="vehicle-thumbnail"
+            />
+          ) : (
+            <div className="no-photo">Sin foto</div>
+          )}
+        </div>
+      )
+    },
     { header: 'Patente', accessor: 'patente' },
     { header: 'Marca', accessor: 'marca' },
     { header: 'Modelo', accessor: 'modelo' },

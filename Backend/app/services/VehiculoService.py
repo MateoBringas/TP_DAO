@@ -25,7 +25,8 @@ def crear_vehiculo_service(data: dict):
         vtv_venc=data.get("vtv_venc"),
         km_service_cada=data.get("km_service_cada"),
         km_ultimo_service=data.get("km_ultimo_service", 0),
-        fecha_ultimo_service=data.get("fecha_ultimo_service")
+        fecha_ultimo_service=data.get("fecha_ultimo_service"),
+        foto_url=data.get("foto_url")
     )
 
     # Insertar en la base
@@ -62,3 +63,33 @@ def obtener_vehiculos_disponibles_service(fecha_inicio: str, fecha_prevista: str
             vehiculos_disponibles.append(vehiculo)
 
     return vehiculos_disponibles
+
+
+def actualizar_vehiculo_service(id_vehiculo: int, data: dict):
+    """Actualiza un vehículo existente."""
+    repo = VehiculoRepository()
+
+    # Obtener el vehículo existente
+    vehiculo = repo.obtener_por_id(id_vehiculo)
+    if not vehiculo:
+        raise ValueError(f"No se encontró el vehículo con ID {id_vehiculo}")
+
+    # Actualizar los campos
+    vehiculo.patente = data.get("patente", vehiculo.patente)
+    vehiculo.marca = data.get("marca", vehiculo.marca)
+    vehiculo.modelo = data.get("modelo", vehiculo.modelo)
+    vehiculo.anio = data.get("anio", vehiculo.anio)
+    vehiculo.tarifa_base_dia = data.get("tarifa_base_dia", vehiculo.tarifa_base_dia)
+    vehiculo.km_actual = data.get("km_actual", vehiculo.km_actual)
+    vehiculo.habilitado = data.get("habilitado", vehiculo.habilitado)
+    vehiculo.seguro_venc = data.get("seguro_venc", vehiculo.seguro_venc)
+    vehiculo.vtv_venc = data.get("vtv_venc", vehiculo.vtv_venc)
+    vehiculo.km_service_cada = data.get("km_service_cada", vehiculo.km_service_cada)
+    vehiculo.km_ultimo_service = data.get("km_ultimo_service", vehiculo.km_ultimo_service)
+    vehiculo.fecha_ultimo_service = data.get("fecha_ultimo_service", vehiculo.fecha_ultimo_service)
+
+    # Actualizar foto_url si se proporciona
+    if "foto_url" in data:
+        vehiculo.foto_url = data["foto_url"]
+
+    return repo.actualizar(vehiculo)

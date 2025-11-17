@@ -1,31 +1,35 @@
 import api from './api'
 
 const reporteService = {
-  // Reporte de vehículo más alquilado
-  getVehiculoMasAlquilado: async () => {
-    const response = await api.get('/reportes/vehiculo-mas-alquilado')
+  // Reporte de vehículos más alquilados
+  getVehiculosMasAlquilados: async () => {
+    const response = await api.get('/reportes/vehiculos-mas-alquilados')
     return response.data
   },
 
-  // Reporte de alquileres por período
-  getAlquileresPorPeriodo: async (fechaInicio, fechaFin) => {
-    const response = await api.get('/reportes/alquileres-por-periodo', {
-      params: { fecha_inicio: fechaInicio, fecha_fin: fechaFin }
-    })
-    return response.data
-  },
-
-  // Estadísticas de facturación mensual
-  getFacturacionMensual: async (anio) => {
-    const response = await api.get('/reportes/facturacion-mensual', {
+  // Reporte de ingresos mensuales
+  getIngresosMensuales: async (anio = '2024') => {
+    const response = await api.get('/reportes/ingresos-mensuales', {
       params: { anio }
     })
     return response.data
   },
 
-  // Listado de alquileres por cliente
-  getListadoPorCliente: async (clienteId) => {
-    const response = await api.get(`/reportes/alquileres-cliente/${clienteId}`)
+  // Reporte de mejores clientes
+  getClientesTop: async () => {
+    const response = await api.get('/reportes/clientes-top')
+    return response.data
+  },
+
+  // Reporte de mantenimientos próximos
+  getMantenimientosProximos: async () => {
+    const response = await api.get('/reportes/mantenimientos-proximos')
+    return response.data
+  },
+
+  // Estadísticas generales
+  getEstadisticasGenerales: async () => {
+    const response = await api.get('/reportes/estadisticas-generales')
     return response.data
   },
 }

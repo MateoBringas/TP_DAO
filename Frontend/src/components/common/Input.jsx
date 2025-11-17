@@ -10,7 +10,10 @@ const Input = ({
   required = false,
   disabled = false,
   error,
-  className = ''
+  className = '',
+  min,
+  max,
+  step
 }) => {
   return (
     <div className={`input-group ${className}`}>
@@ -29,6 +32,9 @@ const Input = ({
         placeholder={placeholder}
         required={required}
         disabled={disabled}
+        min={min}
+        max={max}
+        step={step}
         className={`input-field ${error ? 'input-error' : ''}`}
       />
       {error && <span className="error-message">{error}</span>}

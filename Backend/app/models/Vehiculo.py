@@ -1,5 +1,5 @@
 class Vehiculo:
-    def __init__(self, patente, marca, modelo, anio, tarifa_base_dia, km_actual=0, habilitado=True, id_vehiculo=None, seguro_venc=None, vtv_venc=None, km_service_cada=None, km_ultimo_service=None, fecha_ultimo_service=None):
+    def __init__(self, patente, marca, modelo, anio, tarifa_base_dia, km_actual=0, habilitado=True, id_vehiculo=None, seguro_venc=None, vtv_venc=None, km_service_cada=None, km_ultimo_service=None, fecha_ultimo_service=None, foto_url=None):
         self.id_vehiculo = id_vehiculo
         self.patente = patente
         self.marca = marca
@@ -8,11 +8,12 @@ class Vehiculo:
         self.tarifa_base_dia = tarifa_base_dia #Precio por dia.
         self.km_actual = km_actual
         self.habilitado = habilitado
-        self.seguro_venc = seguro_venc #Opcional 
+        self.seguro_venc = seguro_venc #Opcional
         self.vtv_venc = vtv_venc #Opcional
-        self.km_service_cada = km_service_cada 
+        self.km_service_cada = km_service_cada
         self.km_ultimo_service = km_ultimo_service #Calcular con el km_actual al momento de hacer el service (Mantenimiento).
         self.fecha_ultimo_service = fecha_ultimo_service #Opcional
+        self.foto_url = foto_url #Opcional
 
     def to_dict(self):
         return {
@@ -28,5 +29,6 @@ class Vehiculo:
             "vtv_venc": self.vtv_venc,
             "km_service_cada": self.km_service_cada,
             "km_ultimo_service": self.km_ultimo_service,
-            "fecha_ultimo_service": self.fecha_ultimo_service
+            "fecha_ultimo_service": self.fecha_ultimo_service,
+            "foto_url": self.foto_url
         }

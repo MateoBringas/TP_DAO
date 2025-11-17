@@ -4,16 +4,15 @@ import Button from '../../components/common/Button'
 import clienteService from '../../services/clienteService'
 import vehiculoService from '../../services/vehiculoService'
 
-const AlquilerForm = ({ alquiler, onSave, onCancel }) => {
+const ReservaForm = ({ reserva, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     cliente_id: '',
     vehiculo_id: '',
-    fecha_inicio: '',
-    fecha_prevista: '',
-    fecha_entrega: '',
-    km_salida: '',
-    km_entrada: '',
-    observaciones: '',
+    empleado_id: 1,
+    estado_reserva_id: 1,
+    fecha_reserva: '',
+    fecha_alquiler: '',
+    senia_monto: '',
   })
 
   const [clientes, setClientes] = useState([])
@@ -25,19 +24,22 @@ const AlquilerForm = ({ alquiler, onSave, onCancel }) => {
     loadClientes()
     loadVehiculos()
 
-    if (alquiler) {
+    if (reserva) {
       setFormData({
-        cliente_id: alquiler.cliente_id || '',
-        vehiculo_id: alquiler.vehiculo_id || '',
-        fecha_inicio: alquiler.fecha_inicio || '',
-        fecha_prevista: alquiler.fecha_prevista || '',
-        fecha_entrega: alquiler.fecha_entrega || '',
-        km_salida: alquiler.km_salida || '',
-        km_entrada: alquiler.km_entrada || '',
-        observaciones: alquiler.observaciones || '',
+        cliente_id: reserva.cliente_id || '',
+        vehiculo_id: reserva.vehiculo_id || '',
+        empleado_id: reserva.empleado_id || 1,
+        estado_reserva_id: reserva.estado_reserva_id || 1,
+        fecha_reserva: reserva.fecha_reserva || '',
+        fecha_alquiler: reserva.fecha_alquiler || '',
+        senia_monto: reserva.senia_monto || '',
       })
+    } else {
+      // Establecer la fecha de reserva como hoy por defecto
+      const today = new Date().toISOString().split('T')[0]
+      setFormData(prev => ({ ...prev, fecha_reserva: today }))
     }
-  }, [alquiler])
+  }, [reserva])
 
   const loadClientes = async () => {
     try {
@@ -51,7 +53,7 @@ const AlquilerForm = ({ alquiler, onSave, onCancel }) => {
   const loadVehiculos = async () => {
     try {
       const data = await vehiculoService.getAll()
-      setVehiculos(data)
+      setVehiculos(data.filter(v => v.habilitado))
     } catch (err) {
       console.error('Error al cargar vehículos:', err)
     }
@@ -67,28 +69,6 @@ const AlquilerForm = ({ alquiler, onSave, onCancel }) => {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
-
-    // Si cambian las fechas, recargar vehículos disponibles
-    if (name === 'fecha_inicio' || name === 'fecha_prevista') {
-      const newFechaInicio = name === 'fecha_inicio' ? value : formData.fecha_inicio
-      const newFechaPrevista = name === 'fecha_prevista' ? value : formData.fecha_prevista
-
-      if (newFechaInicio && newFechaPrevista) {
-        loadVehiculosDisponibles(newFechaInicio, newFechaPrevista)
-      }
-    }
-  }
-
-  const loadVehiculosDisponibles = async (fechaInicio, fechaPrevista) => {
-    try {
-      const response = await fetch(
-        `http://localhost:5000/vehiculos/disponibles?fecha_inicio=${fechaInicio}&fecha_prevista=${fechaPrevista}`
-      )
-      const data = await response.json()
-      setVehiculos(data)
-    } catch (err) {
-      console.error('Error al cargar vehículos disponibles:', err)
-    }
   }
 
   const validate = () => {
@@ -96,14 +76,17 @@ const AlquilerForm = ({ alquiler, onSave, onCancel }) => {
 
     if (!formData.cliente_id) newErrors.cliente_id = 'Seleccione un cliente'
     if (!formData.vehiculo_id) newErrors.vehiculo_id = 'Seleccione un vehículo'
-    if (!formData.fecha_inicio) newErrors.fecha_inicio = 'La fecha de inicio es requerida'
-    if (!formData.fecha_prevista) newErrors.fecha_prevista = 'La fecha prevista de devolución es requerida'
-    if (!formData.km_salida) newErrors.km_salida = 'El kilometraje de salida es requerido'
+    if (!formData.fecha_reserva) newErrors.fecha_reserva = 'La fecha de reserva es requerida'
+    if (!formData.fecha_alquiler) newErrors.fecha_alquiler = 'La fecha de alquiler es requerida'
 
-    if (formData.fecha_inicio && formData.fecha_prevista) {
-      if (new Date(formData.fecha_inicio) > new Date(formData.fecha_prevista)) {
-        newErrors.fecha_prevista = 'La fecha prevista debe ser posterior a la de inicio'
+    if (formData.fecha_reserva && formData.fecha_alquiler) {
+      if (new Date(formData.fecha_alquiler) < new Date(formData.fecha_reserva)) {
+        newErrors.fecha_alquiler = 'La fecha de alquiler debe ser posterior a la de reserva'
       }
+    }
+
+    if (formData.senia_monto && parseFloat(formData.senia_monto) < 0) {
+      newErrors.senia_monto = 'El monto de la seña no puede ser negativo'
     }
 
     setErrors(newErrors)
@@ -121,13 +104,14 @@ const AlquilerForm = ({ alquiler, onSave, onCancel }) => {
         ...formData,
         cliente_id: parseInt(formData.cliente_id),
         vehiculo_id: parseInt(formData.vehiculo_id),
-        km_salida: parseInt(formData.km_salida),
-        km_entrada: formData.km_entrada ? parseInt(formData.km_entrada) : null,
+        empleado_id: parseInt(formData.empleado_id),
+        estado_reserva_id: parseInt(formData.estado_reserva_id),
+        senia_monto: formData.senia_monto ? parseFloat(formData.senia_monto) : 0,
       }
 
       await onSave(dataToSend)
     } catch (err) {
-      alert('Error al guardar el alquiler: ' + (err.response?.data?.error || err.message))
+      alert('Error al guardar la reserva: ' + (err.response?.data?.error || err.message))
     } finally {
       setSubmitting(false)
     }
@@ -181,69 +165,53 @@ const AlquilerForm = ({ alquiler, onSave, onCancel }) => {
         </div>
 
         <Input
-          label="Fecha de Inicio"
-          name="fecha_inicio"
+          label="Fecha de Reserva"
+          name="fecha_reserva"
           type="date"
-          value={formData.fecha_inicio}
+          value={formData.fecha_reserva}
           onChange={handleChange}
-          error={errors.fecha_inicio}
+          error={errors.fecha_reserva}
           required
         />
 
         <Input
-          label="Fecha Prevista de Devolución"
-          name="fecha_prevista"
+          label="Fecha de Alquiler Prevista"
+          name="fecha_alquiler"
           type="date"
-          value={formData.fecha_prevista}
+          value={formData.fecha_alquiler}
           onChange={handleChange}
-          error={errors.fecha_prevista}
-          min={formData.fecha_inicio || undefined}
+          error={errors.fecha_alquiler}
+          min={formData.fecha_reserva || undefined}
           required
         />
 
         <Input
-          label="Fecha Real de Entrega"
-          name="fecha_entrega"
-          type="date"
-          value={formData.fecha_entrega}
-          onChange={handleChange}
-          min={formData.fecha_inicio || undefined}
-          placeholder="Completar al devolver"
-        />
-
-        <Input
-          label="KM de Salida"
-          name="km_salida"
+          label="Monto de Seña"
+          name="senia_monto"
           type="number"
-          value={formData.km_salida}
+          step="0.01"
+          value={formData.senia_monto}
           onChange={handleChange}
-          error={errors.km_salida}
-          required
-          placeholder="50000"
+          error={errors.senia_monto}
+          placeholder="0.00"
         />
 
-        <Input
-          label="KM de Entrada"
-          name="km_entrada"
-          type="number"
-          value={formData.km_entrada}
-          onChange={handleChange}
-          placeholder="Completar al devolver (ej: 50500)"
-        />
-
-        <div className="input-group span-2">
-          <label htmlFor="observaciones" className="input-label">
-            Observaciones
+        <div className="input-group">
+          <label htmlFor="estado_reserva_id" className="input-label">
+            Estado
           </label>
-          <textarea
-            id="observaciones"
-            name="observaciones"
-            value={formData.observaciones}
+          <select
+            id="estado_reserva_id"
+            name="estado_reserva_id"
+            value={formData.estado_reserva_id}
             onChange={handleChange}
             className="input-field"
-            rows="3"
-            placeholder="Observaciones adicionales..."
-          />
+          >
+            <option value="1">Pendiente</option>
+            <option value="2">Confirmada</option>
+            <option value="3">Cancelada</option>
+            <option value="4">Completada</option>
+          </select>
         </div>
       </div>
 
@@ -259,4 +227,4 @@ const AlquilerForm = ({ alquiler, onSave, onCancel }) => {
   )
 }
 
-export default AlquilerForm
+export default ReservaForm

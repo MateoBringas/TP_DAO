@@ -13,10 +13,10 @@ class Reserva:
     def to_dict(self):
         return {
             "id_reserva": self.id_reserva,
-            "cliente_id": self.cliente.id_cliente if self.cliente else None,
-            "vehiculo_id": self.vehiculo.id_vehiculo if self.vehiculo else None,
-            "empleado_id": self.empleado.id_empleado if self.empleado else None,
-            "estado_reserva": self.estado_reserva if self.estado_reserva else None,
+            "cliente_id": self.cliente_id,
+            "vehiculo_id": self.vehiculo_id,
+            "empleado_id": self.empleado_id,
+            "estado_reserva_id": self.estado_reserva_id,
             "fecha_reserva": self.fecha_reserva,
             "fecha_alquiler": self.fecha_alquiler,
             "senia_monto": self.senia_monto,
