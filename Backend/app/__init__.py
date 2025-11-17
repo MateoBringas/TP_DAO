@@ -7,6 +7,11 @@ def create_app():
 
     # Importar y registrar los blueprints
     from app.routes.Vehiculo import vehiculos_bp
+    from app.routes.Cliente import clientes_bp
+    from app.routes.Alquiler import alquileres_bp
+
     app.register_blueprint(vehiculos_bp)
+    app.register_blueprint(clientes_bp)
+    app.register_blueprint(alquileres_bp)
 
     return app

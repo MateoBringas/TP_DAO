@@ -31,7 +31,7 @@ try:
     CREATE TABLE IF NOT EXISTS tipos_incidente (
         id_tipo_incidente INTEGER PRIMARY KEY AUTOINCREMENT,
         codigo TEXT NOT NULL UNIQUE,
-        cubre_seguro BOOLEAN NOT NULL DEFAULT 0,
+        cubre_seguro BOOLEAN NOT NULL DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS clientes (

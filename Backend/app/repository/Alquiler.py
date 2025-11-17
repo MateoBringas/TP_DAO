@@ -15,12 +15,12 @@ class AlquilerRepository:
                 vehiculo_id,
                 empleado_id,
                 reserva_id,
-                estado_alquiler,
+                estado_alquiler_id,
                 fecha_inicio,
-                fecha_fin,
-                km_inicio,
-                km_fin,
-                monto_total,
+                fecha_prevista,
+                fecha_entrega,
+                km_salida,
+                km_entrada,
                 observaciones,
                 creado_en,
                 actualizado_en
@@ -33,12 +33,12 @@ class AlquilerRepository:
             data["vehiculo_id"],
             data["empleado_id"],
             data["reserva_id"],
-            data["estado_alquiler"],
+            data["estado_alquiler_id"],
             data["fecha_inicio"],
-            data["fecha_fin"],
-            data["km_inicio"],
-            data["km_fin"],
-            data["monto_total"],
+            data["fecha_prevista"],
+            data["fecha_entrega"],
+            data["km_salida"],
+            data["km_entrada"],
             data["observaciones"],
             data["creado_en"],
             data["actualizado_en"],
@@ -61,17 +61,17 @@ class AlquilerRepository:
 
             for fila in filas:
                 alquiler = Alquiler(
-                    cliente=None,   # luego podés cargar Cliente con ClienteRepository usando fila["cliente_id"]
-                    vehiculo=None,  # idem VehiculoRepository
-                    empleado=None,  # idem EmpleadoRepository
-                    estado_alquiler=fila["estado_alquiler"],
+                    cliente=fila["cliente_id"],
+                    vehiculo=fila["vehiculo_id"],
+                    empleado=fila["empleado_id"],
+                    estado_alquiler=fila["estado_alquiler_id"],
                     creado_en=fila["creado_en"],
-                    reserva=None,   # si la usás, podés cargarla con ReservaRepository
+                    reserva=fila["reserva_id"],
                     fecha_inicio=fila["fecha_inicio"],
-                    fecha_fin=fila["fecha_fin"],
-                    km_inicio=fila["km_inicio"],
-                    km_fin=fila["km_fin"],
-                    monto_total=fila["monto_total"],
+                    fecha_prevista=fila["fecha_prevista"],
+                    fecha_entrega=fila["fecha_entrega"],
+                    km_salida=fila["km_salida"],
+                    km_entrada=fila["km_entrada"],
                     observaciones=fila["observaciones"],
                     actualizado_en=fila["actualizado_en"],
                     id_alquiler=fila["id_alquiler"],
@@ -79,3 +79,105 @@ class AlquilerRepository:
                 alquileres.append(alquiler)
 
             return alquileres
+
+    def obtener_por_id(self, id_alquiler: int):
+        query = "SELECT * FROM alquileres WHERE id_alquiler = ?"
+        with self._connection_factory() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (id_alquiler,))
+            fila = cursor.fetchone()
+
+            if not fila:
+                return None
+
+            return Alquiler(
+                cliente=fila["cliente_id"],
+                vehiculo=fila["vehiculo_id"],
+                empleado=fila["empleado_id"],
+                estado_alquiler=fila["estado_alquiler_id"],
+                creado_en=fila["creado_en"],
+                reserva=fila["reserva_id"],
+                fecha_inicio=fila["fecha_inicio"],
+                fecha_prevista=fila["fecha_prevista"],
+                fecha_entrega=fila["fecha_entrega"],
+                km_salida=fila["km_salida"],
+                km_entrada=fila["km_entrada"],
+                observaciones=fila["observaciones"],
+                actualizado_en=fila["actualizado_en"],
+                id_alquiler=fila["id_alquiler"],
+            )
+
+    def actualizar(self, id_alquiler: int, alquiler: Alquiler):
+        data = alquiler.to_dict()
+        query = """
+            UPDATE alquileres SET
+                cliente_id = ?,
+                vehiculo_id = ?,
+                empleado_id = ?,
+                estado_alquiler_id = ?,
+                fecha_inicio = ?,
+                fecha_prevista = ?,
+                fecha_entrega = ?,
+                km_salida = ?,
+                km_entrada = ?,
+                observaciones = ?,
+                actualizado_en = CURRENT_TIMESTAMP
+            WHERE id_alquiler = ?
+        """
+        valores = (
+            data["cliente_id"],
+            data["vehiculo_id"],
+            data["empleado_id"],
+            data["estado_alquiler_id"],
+            data["fecha_inicio"],
+            data["fecha_prevista"],
+            data["fecha_entrega"],
+            data["km_salida"],
+            data["km_entrada"],
+            data["observaciones"],
+            id_alquiler
+        )
+
+        with self._connection_factory() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, valores)
+            conn.commit()
+            alquiler.id_alquiler = id_alquiler
+            return alquiler
+
+    def eliminar(self, id_alquiler: int) -> bool:
+        query = "DELETE FROM alquileres WHERE id_alquiler = ?"
+        with self._connection_factory() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (id_alquiler,))
+            conn.commit()
+            return cursor.rowcount > 0
+
+    def verificar_disponibilidad(self, vehiculo_id: int, fecha_inicio: str, fecha_prevista: str, excluir_alquiler_id: int = None) -> bool:
+        """
+        Verifica si un vehículo está disponible en un rango de fechas.
+        Retorna True si está disponible, False si ya está alquilado.
+        """
+        query = """
+            SELECT COUNT(*) as count FROM alquileres
+            WHERE vehiculo_id = ?
+            AND (
+                -- El nuevo período se solapa con alquileres existentes
+                (fecha_inicio <= ? AND (fecha_entrega IS NULL OR fecha_entrega >= ?))
+                OR (fecha_inicio >= ? AND fecha_inicio <= ?)
+            )
+            AND estado_alquiler_id IN (1, 2)  -- PENDIENTE o ACTIVO
+        """
+
+        params = [vehiculo_id, fecha_prevista, fecha_inicio, fecha_inicio, fecha_prevista]
+
+        # Si estamos actualizando un alquiler, excluir ese registro de la verificación
+        if excluir_alquiler_id:
+            query += " AND id_alquiler != ?"
+            params.append(excluir_alquiler_id)
+
+        with self._connection_factory() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            result = cursor.fetchone()
+            return result["count"] == 0  # True si no hay conflictos
