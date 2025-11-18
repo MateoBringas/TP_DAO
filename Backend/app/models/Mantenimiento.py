@@ -13,7 +13,7 @@ class Mantenimiento:
     def to_dict(self):
         return {
             "id_mantenimiento": self.id_mantenimiento,
-            "vehiculo_id": self.vehiculo.id_vehiculo if self.vehiculo else None,
+            "vehiculo": self.vehiculo.to_dict() if self.vehiculo else None,
             "empleado_id": self.empleado.id_empleado if self.empleado else None,
             "estado_mantenimiento": self.estado_mantenimiento if self.estado_mantenimiento else None,
             "fecha_programada": self.fecha_programada,

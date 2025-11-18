@@ -81,7 +81,12 @@ const Mantenimientos = () => {
 
   const columns = [
     { header: 'ID', accessor: 'id_mantenimiento' },
-    { header: 'Vehículo ID', accessor: 'vehiculo_id' },
+    { header: 'Vehículo Patente', render: (row) => (
+        <span style={{ display: 'block', textAlign: 'center' }}>
+          {row.vehiculo ? row.vehiculo.patente : 'N/A'}
+        </span>
+      ),  
+    },
     { header: 'Fecha Programada', accessor: 'fecha_programada' },
     {
       header: 'Fecha Realizada',
@@ -96,6 +101,46 @@ const Mantenimientos = () => {
       header: 'Estado',
       render: (row) => getEstadoBadge(row.estado_mantenimiento)
     },
+    //COLUMNA DE ACCIONES
+    {
+      header: 'Acciones',
+      accessor: 'acciones', 
+      render: (row) => {
+        // Bloqueamos la edición/eliminación si el estado es COMPLETADO o CANCELADO
+        const cannotModify = row.estado_mantenimiento === 'COMPLETADO' || row.estado_mantenimiento === 'CANCELADO';
+        
+        if (cannotModify) {
+          return;
+        }
+
+        return (
+          <div className="actions-cell">
+            {/* Botón de Editar */}
+            <button 
+              className="action-btn edit-btn" 
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                handleEdit(row); 
+              }}
+              aria-label="Editar"
+            >
+              ✏️
+            </button>
+            {/* Botón de Eliminar */}
+            <button 
+              className="action-btn delete-btn" 
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                handleDelete(row); 
+              }}
+              aria-label="Eliminar"
+            >
+              🗑️
+            </button>
+          </div>
+        );
+      }
+    }
   ]
 
   if (loading) {
@@ -116,8 +161,6 @@ const Mantenimientos = () => {
       <Table
         columns={columns}
         data={mantenimientos}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
       />
 
       <Modal

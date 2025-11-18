@@ -1,5 +1,6 @@
 from app.database.database import get_connection
 from app.models.Mantenimiento import Mantenimiento
+from app.models.Vehiculo import Vehiculo
 
 
 class MantenimientoRepository:
@@ -39,7 +40,8 @@ class MantenimientoRepository:
             return mantenimiento
 
     def obtener_todos(self) -> list[Mantenimiento]:
-        query = "SELECT * FROM mantenimientos"
+        query = """ SELECT M.*, V.id_vehiculo, V.patente, V.marca ,V.modelo FROM mantenimientos M 
+        INNER JOIN vehiculos V ON M.vehiculo_id = V.id_vehiculo """
         with self._connection_factory() as conn:
             cursor = conn.cursor()
             cursor.execute(query)
@@ -47,8 +49,17 @@ class MantenimientoRepository:
             mantenimientos: list[Mantenimiento] = []
 
             for fila in filas:
+                vehiculo_asociado = Vehiculo(
+                id_vehiculo=fila["id_vehiculo"],
+                patente=fila["patente"],
+                marca=fila["marca"],
+                modelo=fila["modelo"],
+                anio=None,
+                tarifa_base_dia=None,
+            )
+
                 mantenimiento = Mantenimiento(
-                    vehiculo=None,   # después podés cargarlo con VehiculoRepository si querés
+                    vehiculo=vehiculo_asociado,
                     empleado=None,   # idem con EmpleadoRepository
                     estado_mantenimiento=fila["estado_mantenimiento"],
                     fecha_programada=fila["fecha_programada"],

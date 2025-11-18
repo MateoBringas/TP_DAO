@@ -18,14 +18,30 @@ const MantenimientoForm = ({ mantenimiento, onSave, onCancel }) => {
   const [vehiculos, setVehiculos] = useState([])
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
+  // Obtiene la fecha de hoy en formato YYYY-MM-DD
+  const today = new Date().toISOString().split('T')[0]; 
+  const isEditing = !!mantenimiento;
+  const isProgramado = formData.estado_mantenimiento === 'PROGRAMADO';
+  const isEnCurso = formData.estado_mantenimiento === 'EN_CURSO';
+  const isCompletado = formData.estado_mantenimiento === 'COMPLETADO';
+  const isCancelado = formData.estado_mantenimiento === 'CANCELADO';
+
+  // Reglas de Disabling
+  const isFechaRealizadaDisabled = isProgramado || isCancelado;
+  
+  // Deshabilitar Fecha Programada una vez que está en curso o finalizado/cancelado
+  const isFechaProgramadaDisabled = isEnCurso || (isEditing && (isCompletado || isCancelado));
+  
+  // Reglas de Required
+  const isFechaProgramadaRequired = !isCompletado && !isCancelado;
+  const isFechaRealizadaRequired = isCompletado;
 
   useEffect(() => {
     loadVehiculos()
 
     if (mantenimiento) {
       setFormData({
-        vehiculo_id: mantenimiento.vehiculo_id || '',
-        empleado_id: mantenimiento.empleado_id || 1,
+        vehiculo_id: mantenimiento.vehiculo?.id_vehiculo || '', 
         estado_mantenimiento: mantenimiento.estado_mantenimiento || 'PROGRAMADO',
         fecha_programada: mantenimiento.fecha_programada || '',
         fecha_realizada: mantenimiento.fecha_realizada || '',
@@ -34,8 +50,6 @@ const MantenimientoForm = ({ mantenimiento, onSave, onCancel }) => {
         observacion: mantenimiento.observacion || '',
       })
     } else {
-      // Establecer la fecha programada como hoy por defecto
-      const today = new Date().toISOString().split('T')[0]
       setFormData(prev => ({ ...prev, fecha_programada: today }))
     }
   }, [mantenimiento])
@@ -51,10 +65,11 @@ const MantenimientoForm = ({ mantenimiento, onSave, onCancel }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    
+    setFormData(prev => {
+        let newFormData = { ...prev, [name]: value };
+        return newFormData;
+    })
 
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
@@ -65,17 +80,32 @@ const MantenimientoForm = ({ mantenimiento, onSave, onCancel }) => {
     const newErrors = {}
 
     if (!formData.vehiculo_id) newErrors.vehiculo_id = 'Seleccione un vehículo'
-    if (!formData.fecha_programada) newErrors.fecha_programada = 'La fecha programada es requerida'
     if (!formData.km) newErrors.km = 'El kilometraje es requerido'
-
     if (formData.km && parseInt(formData.km) < 0) {
       newErrors.km = 'El kilometraje no puede ser negativo'
     }
-
     if (formData.costo && parseFloat(formData.costo) < 0) {
       newErrors.costo = 'El costo no puede ser negativo'
     }
+    
+    // Validación de Fecha Programada (Requerida si no es Completado/Cancelado)
+    if (isFechaProgramadaRequired && !formData.fecha_programada) {
+        newErrors.fecha_programada = 'La fecha programada es requerida para este estado';
+    }
+    
+    // Validación de Fecha Realizada (Requerida solo si es Completado)
+    if (isFechaRealizadaRequired && !formData.fecha_realizada) {
+        newErrors.fecha_realizada = 'La fecha de realización es requerida al completar el mantenimiento';
+    }
 
+    // Validación de Fecha Programada vs Hoy (Solo si es PROGRAMADO)
+    if (isProgramado && formData.fecha_programada) {
+        if (new Date(formData.fecha_programada) < new Date(today)) {
+             newErrors.fecha_programada = 'La fecha programada no puede ser anterior a hoy.';
+        }
+    }
+    
+    // Validación de Fecha Realizada vs Programada (Solo si ambas existen)
     if (formData.fecha_realizada && formData.fecha_programada) {
       if (new Date(formData.fecha_realizada) < new Date(formData.fecha_programada)) {
         newErrors.fecha_realizada = 'La fecha realizada no puede ser anterior a la programada'
@@ -89,6 +119,17 @@ const MantenimientoForm = ({ mantenimiento, onSave, onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    // Manejo de valores nulos para fechas opcionales según el estado antes de enviar al backend
+    let finalFechaProgramada = formData.fecha_programada;
+    if ((isCompletado || isCancelado) && !formData.fecha_programada) {
+        finalFechaProgramada = null;
+    }
+
+    let finalFechaRealizada = formData.fecha_realizada;
+    if (isFechaRealizadaDisabled && !formData.fecha_realizada) {
+        finalFechaRealizada = null;
+    }
+
     if (!validate()) return
 
     setSubmitting(true)
@@ -99,6 +140,8 @@ const MantenimientoForm = ({ mantenimiento, onSave, onCancel }) => {
         empleado_id: formData.empleado_id ? parseInt(formData.empleado_id) : null,
         km: parseInt(formData.km),
         costo: formData.costo ? parseFloat(formData.costo) : 0,
+        fecha_programada: finalFechaProgramada,
+        fecha_realizada: finalFechaRealizada,
       }
 
       await onSave(dataToSend)
@@ -120,6 +163,7 @@ const MantenimientoForm = ({ mantenimiento, onSave, onCancel }) => {
             id="vehiculo_id"
             name="vehiculo_id"
             value={formData.vehiculo_id}
+            disabled={mantenimiento?.vehiculo?.id_vehiculo} 
             onChange={handleChange}
             className={`input-field ${errors.vehiculo_id ? 'input-error' : ''}`}
             required
@@ -144,6 +188,7 @@ const MantenimientoForm = ({ mantenimiento, onSave, onCancel }) => {
             value={formData.estado_mantenimiento}
             onChange={handleChange}
             className="input-field"
+            disabled={!mantenimiento}
             required
           >
             <option value="PROGRAMADO">Programado</option>
@@ -160,17 +205,28 @@ const MantenimientoForm = ({ mantenimiento, onSave, onCancel }) => {
           value={formData.fecha_programada}
           onChange={handleChange}
           error={errors.fecha_programada}
-          required
+          // Bloquea el campo si está EN CURSO, COMPLETADO o CANCELADO (en edición)
+          disabled={isFechaProgramadaDisabled}
+          // Es requerido, a menos que sea un registro histórico (Completado/Cancelado)
+          required={isFechaProgramadaRequired}
+          // Mínimo = Hoy, SOLO si está PROGRAMADO
+          min={isProgramado ? today : undefined}
         />
 
         <Input
           label="Fecha Realizada"
           name="fecha_realizada"
           type="date"
+          // Bloquea el campo si es PROGRAMADO o CANCELADO
+          disabled={isFechaRealizadaDisabled}
           value={formData.fecha_realizada}
           onChange={handleChange}
           error={errors.fecha_realizada}
           placeholder="Completar cuando se realice"
+          // Es requerido SÓLO si está COMPLETADO
+          required={isFechaRealizadaRequired}
+          // Mínimo: La fecha programada (si existe), para no permitir una fecha anterior a la programación
+          min={formData.fecha_programada || undefined} 
         />
 
         <Input
