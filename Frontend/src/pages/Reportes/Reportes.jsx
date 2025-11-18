@@ -25,7 +25,7 @@ const Reportes = () => {
   const [clientesTop, setClientesTop] = useState([])
   const [ingresosMensuales, setIngresosMensuales] = useState([])
   const [mantenimientosProximos, setMantenimientosProximos] = useState([])
-  const [anioSeleccionado, setAnioSeleccionado] = useState('2024')
+  const [anioSeleccionado, setAnioSeleccionado] = useState('2025')
 
   useEffect(() => {
     loadReportes()
