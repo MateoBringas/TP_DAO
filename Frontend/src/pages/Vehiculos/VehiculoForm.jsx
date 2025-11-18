@@ -242,7 +242,7 @@ const VehiculoForm = ({ vehiculo, onSave, onCancel }) => {
           value={formData.km_ultimo_service}
           onChange={handleChange}
           placeholder="40000"
-          disabled={true}
+          disabled={vehiculo ? true : false}
         />
 
         <Input
@@ -251,7 +251,7 @@ const VehiculoForm = ({ vehiculo, onSave, onCancel }) => {
           type="date"
           value={formData.fecha_ultimo_service}
           onChange={handleChange}
-          disabled={true}
+          disabled={vehiculo ? true : false}
         />
 
         <Input
