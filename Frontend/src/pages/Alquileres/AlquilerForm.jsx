@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Input from '../../components/common/Input'
 import Button from '../../components/common/Button'
+import ClienteDeshabilitadoModal from '../../components/common/ClienteDeshabilitadoModal'
 import clienteService from '../../services/clienteService'
 import vehiculoService from '../../services/vehiculoService'
 
@@ -20,6 +21,8 @@ const AlquilerForm = ({ alquiler, onSave, onCancel }) => {
   const [vehiculos, setVehiculos] = useState([])
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
+  const [showClienteModal, setShowClienteModal] = useState(false)
+  const [clienteDeshabilitadoId, setClienteDeshabilitadoId] = useState(null)
 
   useEffect(() => {
     loadClientes()
@@ -127,10 +130,26 @@ const AlquilerForm = ({ alquiler, onSave, onCancel }) => {
 
       await onSave(dataToSend)
     } catch (err) {
-      alert('Error al guardar el alquiler: ' + (err.response?.data?.error || err.message))
+      const errorMessage = err.response?.data?.error || err.message
+
+      // Detectar si el error es por cliente deshabilitado
+      if (errorMessage.includes('no está habilitado')) {
+        setClienteDeshabilitadoId(formData.cliente_id)
+        setShowClienteModal(true)
+      } else {
+        alert('Error al guardar el alquiler: ' + errorMessage)
+      }
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handleClienteChange = (nuevoClienteId) => {
+    setFormData(prev => ({
+      ...prev,
+      cliente_id: nuevoClienteId
+    }))
+    setClienteDeshabilitadoId(null)
   }
 
   return (
@@ -255,6 +274,14 @@ const AlquilerForm = ({ alquiler, onSave, onCancel }) => {
           {submitting ? 'Guardando...' : 'Guardar'}
         </Button>
       </div>
+
+      <ClienteDeshabilitadoModal
+        isOpen={showClienteModal}
+        onClose={() => setShowClienteModal(false)}
+        onClienteChange={handleClienteChange}
+        clientes={clientes}
+        clienteActual={clienteDeshabilitadoId}
+      />
     </form>
   )
 }

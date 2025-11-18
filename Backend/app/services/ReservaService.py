@@ -21,11 +21,13 @@ def crear_reserva_service(data: dict):
     if not vehiculo.habilitado:
         raise ValueError("El vehículo no está habilitado para reservas")
 
-    # Verificar que el cliente existe
+    # Verificar que el cliente existe y está habilitado
     cliente_repo = ClienteRepository()
     cliente = cliente_repo.obtener_por_id(data["cliente_id"])
     if not cliente:
         raise ValueError("El cliente especificado no existe")
+    if not cliente.habilitado:
+        raise ValueError("El cliente no está habilitado para realizar reservas")
 
     reserva = Reserva(
         cliente=data.get("cliente_id"),

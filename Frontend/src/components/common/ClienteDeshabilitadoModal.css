@@ -1,0 +1,117 @@
+.cliente-deshabilitado-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.warning-icon {
+  font-size: 3rem;
+  text-align: center;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.warning-message {
+  text-align: center;
+}
+
+.message-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--danger-color);
+  margin: 0 0 0.75rem 0;
+}
+
+.cliente-info {
+  font-size: 1rem;
+  color: var(--text-color);
+  margin: 0 0 0.75rem 0;
+  padding: 0.5rem;
+  background-color: var(--bg-color);
+  border-radius: 4px;
+}
+
+.message-description {
+  font-size: 0.95rem;
+  color: var(--secondary-color);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.cliente-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.selector-label {
+  font-weight: 500;
+  color: var(--text-color);
+  font-size: 0.95rem;
+}
+
+.selector-field {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  color: var(--text-color);
+  background-color: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.selector-field:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.selector-field option {
+  padding: 0.5rem;
+}
+
+.no-clientes-warning {
+  color: var(--danger-color);
+  font-size: 0.9rem;
+  margin: 0.5rem 0 0 0;
+  padding: 0.5rem;
+  background-color: #fee2e2;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.modal-actions button {
+  min-width: 120px;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 640px) {
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+}

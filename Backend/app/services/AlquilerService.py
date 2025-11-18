@@ -1,5 +1,6 @@
 from app.models.Alquiler import Alquiler
 from app.repository.Alquiler import AlquilerRepository
+from app.repository.ClienteRepository import ClienteRepository
 from datetime import datetime
 
 def crear_alquiler_service(data: dict):
@@ -9,6 +10,14 @@ def crear_alquiler_service(data: dict):
     for campo in required_fields:
         if campo not in data:
             raise ValueError(f"Falta el campo obligatorio: {campo}")
+
+    # Verificar que el cliente existe y está habilitado
+    cliente_repo = ClienteRepository()
+    cliente = cliente_repo.obtener_por_id(data["cliente_id"])
+    if not cliente:
+        raise ValueError("El cliente especificado no existe")
+    if not cliente.habilitado:
+        raise ValueError("El cliente no está habilitado para realizar alquileres")
 
     repo = AlquilerRepository()
 
