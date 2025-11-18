@@ -40,7 +40,7 @@ class MantenimientoRepository:
             return mantenimiento
 
     def obtener_todos(self) -> list[Mantenimiento]:
-        query = """ SELECT M.*, V.id_vehiculo, V.patente, V.marca ,V.modelo FROM mantenimientos M 
+        query = """ SELECT M.*, V.id_vehiculo, V.patente, V.marca ,V.modelo, V.km_actual FROM mantenimientos M 
         INNER JOIN vehiculos V ON M.vehiculo_id = V.id_vehiculo """
         with self._connection_factory() as conn:
             cursor = conn.cursor()
@@ -56,6 +56,7 @@ class MantenimientoRepository:
                 modelo=fila["modelo"],
                 anio=None,
                 tarifa_base_dia=None,
+                km_actual=fila["km_actual"]
             )
 
                 mantenimiento = Mantenimiento(

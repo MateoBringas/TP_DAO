@@ -68,6 +68,23 @@ const MantenimientoForm = ({ mantenimiento, onSave, onCancel }) => {
     
     setFormData(prev => {
         let newFormData = { ...prev, [name]: value };
+
+        // Lógica de limpieza y sincronización de KM
+        
+        // 1. Si el estado cambia a PROGRAMADO, limpia Fecha Realizada
+        if (name === 'estado_mantenimiento' && (value === 'PROGRAMADO')) {
+            newFormData.fecha_realizada = '';
+        }
+
+        // 2. Si el vehículo cambia, actualiza el KM en formData
+        // En edición, el KM viene del mantenimiento.
+        if (name === 'vehiculo_id' && value && !isEditing) {
+            const selectedVehiculo = vehiculos.find(v => v.id_vehiculo.toString() === value);
+            if (selectedVehiculo) {
+                newFormData.km = selectedVehiculo.km_actual; 
+            }
+        }
+        
         return newFormData;
     })
 
@@ -84,8 +101,8 @@ const MantenimientoForm = ({ mantenimiento, onSave, onCancel }) => {
     if (formData.km && parseInt(formData.km) < 0) {
       newErrors.km = 'El kilometraje no puede ser negativo'
     }
-    if (formData.costo && parseFloat(formData.costo) < 0) {
-      newErrors.costo = 'El costo no puede ser negativo'
+    if (!formData.costo || (formData.costo && parseFloat(formData.costo) <= 0)) {
+      newErrors.costo = 'El costo debe ser mayor a cero'
     }
     
     // Validación de Fecha Programada (Requerida si no es Completado/Cancelado)
@@ -233,9 +250,10 @@ const MantenimientoForm = ({ mantenimiento, onSave, onCancel }) => {
           label="Kilometraje"
           name="km"
           type="number"
-          value={formData.km}
+          value={formData.km} 
           onChange={handleChange}
           error={errors.km}
+          disabled={true} 
           required
           placeholder="50000"
         />

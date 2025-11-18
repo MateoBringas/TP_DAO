@@ -61,6 +61,12 @@ def actualizar_mantenimiento_service(id_mantenimiento: int, data: dict):
     vehiculo = vehiculo_repo.obtener_por_id(data.get("vehiculo_id"))
     if not vehiculo:
         raise ValueError("El vehículo especificado no existe")
+    
+    if data.get("estado_mantenimiento") == "COMPLETADO" and data.get("fecha_realizada"):
+        fecha_realizada = datetime.strptime(data.get("fecha_realizada"), "%Y-%m-%d").date()
+        vehiculo.fecha_ultimo_service = fecha_realizada
+        vehiculo.km_ultimo_service = data.get("km", vehiculo.km_actual)
+        vehiculo_repo.actualizar(vehiculo)
 
     # Actualizar en la base de datos
     query = """
