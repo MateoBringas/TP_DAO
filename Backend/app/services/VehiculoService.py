@@ -43,17 +43,25 @@ def obtener_todos_vehiculos_service():
 def obtener_vehiculos_disponibles_service(fecha_inicio: str, fecha_prevista: str):
     """Devuelve vehículos disponibles en un rango de fechas."""
     from app.repository.Alquiler import AlquilerRepository
+    from app.repository.MantenimientoRepository import MantenimientoRepository
 
     vehiculo_repo = VehiculoRepository()
     alquiler_repo = AlquilerRepository()
+    mantenimiento_repo = MantenimientoRepository()
 
     # Obtener todos los vehículos habilitados
     todos_vehiculos = vehiculo_repo.obtener_todos()
     vehiculos_habilitados = [v for v in todos_vehiculos if v.habilitado]
 
-    # Filtrar solo los disponibles
+    # Filtrar solo los disponibles (sin alquileres conflictivos y sin mantenimiento)
     vehiculos_disponibles = []
     for vehiculo in vehiculos_habilitados:
+        # Verificar que no esté en mantenimiento
+        en_mantenimiento = mantenimiento_repo.vehiculo_en_mantenimiento(vehiculo.id_vehiculo)
+        if en_mantenimiento:
+            continue
+
+        # Verificar disponibilidad de alquileres
         disponible = alquiler_repo.verificar_disponibilidad(
             vehiculo_id=vehiculo.id_vehiculo,
             fecha_inicio=fecha_inicio,
@@ -93,3 +101,9 @@ def actualizar_vehiculo_service(id_vehiculo: int, data: dict):
         vehiculo.foto_url = data["foto_url"]
 
     return repo.actualizar(vehiculo)
+
+
+def obtener_todos_vehiculos_con_estado_service():
+    """Devuelve todos los vehículos con su estado actual (disponible/alquilado/reservado/mantenimiento)"""
+    repo = VehiculoRepository()
+    return repo.obtener_todos_con_estado()

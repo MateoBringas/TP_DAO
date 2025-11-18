@@ -73,3 +73,17 @@ class MantenimientoRepository:
                 mantenimientos.append(mantenimiento)
 
             return mantenimientos
+
+    def vehiculo_en_mantenimiento(self, vehiculo_id: int) -> bool:
+        """Verifica si un vehículo está actualmente en mantenimiento (PROGRAMADO o EN_PROGRESO)"""
+        query = """
+            SELECT COUNT(*) as count FROM mantenimientos
+            WHERE vehiculo_id = ?
+            AND estado_mantenimiento IN ('PROGRAMADO', 'EN_PROGRESO')
+            AND (fecha_realizada IS NULL OR fecha_realizada >= date('now'))
+        """
+        with self._connection_factory() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (vehiculo_id,))
+            resultado = cursor.fetchone()
+            return resultado["count"] > 0

@@ -13,7 +13,7 @@ reservas_bp = Blueprint("reservas_bp", __name__, url_prefix="/reservas")
 def get_reservas():
     try:
         reservas = obtener_todas_reservas_service()
-        return jsonify([r.to_dict() for r in reservas]), 200
+        return jsonify(reservas), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

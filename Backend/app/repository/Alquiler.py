@@ -51,32 +51,52 @@ class AlquilerRepository:
             alquiler.id_alquiler = cursor.lastrowid
             return alquiler
 
-    def obtener_todos(self) -> list[Alquiler]:
-        query = "SELECT * FROM alquileres"
+    def obtener_todos(self) -> list[dict]:
+        """Obtiene todos los alquileres con información completa de cliente y vehículo"""
+        query = """
+            SELECT
+                a.*,
+                c.nombre as cliente_nombre,
+                c.apellido as cliente_apellido,
+                c.dni as cliente_dni,
+                v.patente as vehiculo_patente,
+                v.marca as vehiculo_marca,
+                v.modelo as vehiculo_modelo,
+                ea.codigo as estado_nombre
+            FROM alquileres a
+            LEFT JOIN clientes c ON a.cliente_id = c.id_cliente
+            LEFT JOIN vehiculos v ON a.vehiculo_id = v.id_vehiculo
+            LEFT JOIN estados_alquiler ea ON a.estado_alquiler_id = ea.id_estado_alquiler
+            ORDER BY a.fecha_inicio DESC
+        """
         with self._connection_factory() as conn:
             cursor = conn.cursor()
             cursor.execute(query)
             filas = cursor.fetchall()
-            alquileres: list[Alquiler] = []
+            alquileres = []
 
             for fila in filas:
-                alquiler = Alquiler(
-                    cliente=fila["cliente_id"],
-                    vehiculo=fila["vehiculo_id"],
-                    empleado=fila["empleado_id"],
-                    estado_alquiler=fila["estado_alquiler_id"],
-                    creado_en=fila["creado_en"],
-                    reserva=fila["reserva_id"],
-                    fecha_inicio=fila["fecha_inicio"],
-                    fecha_prevista=fila["fecha_prevista"],
-                    fecha_entrega=fila["fecha_entrega"],
-                    km_salida=fila["km_salida"],
-                    km_entrada=fila["km_entrada"],
-                    observaciones=fila["observaciones"],
-                    actualizado_en=fila["actualizado_en"],
-                    id_alquiler=fila["id_alquiler"],
-                )
-                alquileres.append(alquiler)
+                alquiler_dict = {
+                    "id_alquiler": fila["id_alquiler"],
+                    "cliente_id": fila["cliente_id"],
+                    "cliente_nombre_completo": f"{fila['cliente_nombre']} {fila['cliente_apellido']}" if fila['cliente_nombre'] else "N/A",
+                    "cliente_dni": fila["cliente_dni"],
+                    "vehiculo_id": fila["vehiculo_id"],
+                    "vehiculo_descripcion": f"{fila['vehiculo_marca']} {fila['vehiculo_modelo']} - {fila['vehiculo_patente']}" if fila['vehiculo_marca'] else "N/A",
+                    "empleado_id": fila["empleado_id"],
+                    "estado_alquiler_id": fila["estado_alquiler_id"],
+                    "estado_nombre": fila["estado_nombre"],
+                    "reserva_id": fila["reserva_id"],
+                    "fecha_inicio": fila["fecha_inicio"],
+                    "fecha_prevista": fila["fecha_prevista"],
+                    "fecha_entrega": fila["fecha_entrega"],
+                    "km_salida": fila["km_salida"],
+                    "km_entrada": fila["km_entrada"],
+                    "observaciones": fila["observaciones"],
+                    "creado_en": fila["creado_en"],
+                    "actualizado_en": fila["actualizado_en"]
+                }
+                alquileres.append(alquiler_dict)
 
             return alquileres
 

@@ -70,8 +70,8 @@ const Alquileres = () => {
 
   const columns = [
     { header: 'ID', accessor: 'id_alquiler' },
-    { header: 'Cliente ID', accessor: 'cliente_id' },
-    { header: 'Vehículo ID', accessor: 'vehiculo_id' },
+    { header: 'Cliente', accessor: 'cliente_nombre_completo' },
+    { header: 'Vehículo', accessor: 'vehiculo_descripcion' },
     { header: 'Fecha Inicio', accessor: 'fecha_inicio' },
     { header: 'Fecha Prevista', accessor: 'fecha_prevista' },
     { header: 'Fecha Entrega', render: (row) => row.fecha_entrega || 'Pendiente' },

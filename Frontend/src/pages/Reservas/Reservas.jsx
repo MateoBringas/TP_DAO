@@ -81,8 +81,8 @@ const Reservas = () => {
 
   const columns = [
     { header: 'ID', accessor: 'id_reserva' },
-    { header: 'Cliente ID', accessor: 'cliente_id' },
-    { header: 'Vehículo ID', accessor: 'vehiculo_id' },
+    { header: 'Cliente', accessor: 'cliente_nombre_completo' },
+    { header: 'Vehículo', accessor: 'vehiculo_descripcion' },
     { header: 'Fecha Reserva', accessor: 'fecha_reserva' },
     { header: 'Fecha Alquiler', accessor: 'fecha_alquiler' },
     {

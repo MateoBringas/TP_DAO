@@ -20,7 +20,7 @@ const Vehiculos = () => {
   const loadVehiculos = async () => {
     try {
       setLoading(true)
-      const data = await vehiculoService.getAll()
+      const data = await vehiculoService.getAllConEstado()
       setVehiculos(data)
       setError(null)
     } catch (err) {
@@ -96,10 +96,27 @@ const Vehiculos = () => {
     },
     { header: 'KM Actual', accessor: 'km_actual' },
     {
-      header: 'Estado',
+      header: 'Disponibilidad',
+      render: (row) => {
+        const estadoConfig = {
+          disponible: { text: 'Disponible', class: 'badge-success' },
+          alquilado: { text: 'Alquilado', class: 'badge-warning' },
+          reservado: { text: 'Reservado', class: 'badge-info' },
+          mantenimiento: { text: 'En Mantenimiento', class: 'badge-danger' }
+        }
+        const config = estadoConfig[row.estado_actual] || estadoConfig.disponible
+        return (
+          <span className={`badge ${config.class}`}>
+            {config.text}
+          </span>
+        )
+      }
+    },
+    {
+      header: 'Habilitado',
       render: (row) => (
         <span className={`badge ${row.habilitado ? 'badge-success' : 'badge-danger'}`}>
-          {row.habilitado ? 'Habilitado' : 'No habilitado'}
+          {row.habilitado ? 'Sí' : 'No'}
         </span>
       )
     },

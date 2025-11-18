@@ -5,7 +5,8 @@ from app.services.VehiculoService import (
     obtener_todos_vehiculos_service,
     crear_vehiculo_service,
     obtener_vehiculos_disponibles_service,
-    actualizar_vehiculo_service
+    actualizar_vehiculo_service,
+    obtener_todos_vehiculos_con_estado_service
 )
 
 vehiculos_bp = Blueprint("vehiculos_bp", __name__, url_prefix="/vehiculos")
@@ -29,6 +30,16 @@ def get_vehiculos_disponibles():
 
         vehiculos = obtener_vehiculos_disponibles_service(fecha_inicio, fecha_prevista)
         return jsonify([v.to_dict() for v in vehiculos]), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# GET /con-estado
+@vehiculos_bp.route("/con-estado", methods=["GET"])
+def get_vehiculos_con_estado():
+    try:
+        vehiculos = obtener_todos_vehiculos_con_estado_service()
+        return jsonify(vehiculos), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

@@ -13,7 +13,7 @@ alquileres_bp = Blueprint("alquileres_bp", __name__, url_prefix="/alquileres")
 def get_alquileres():
     try:
         alquileres = obtener_todos_alquileres_service()
-        return jsonify([a.to_dict() for a in alquileres]), 200
+        return jsonify(alquileres), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

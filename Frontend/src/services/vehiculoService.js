@@ -36,6 +36,12 @@ const vehiculoService = {
     const response = await api.get('/vehiculos/disponibles')
     return response.data
   },
+
+  // Obtener todos los vehículos con su estado actual
+  getAllConEstado: async () => {
+    const response = await api.get('/vehiculos/con-estado')
+    return response.data
+  },
 }
 
 export default vehiculoService

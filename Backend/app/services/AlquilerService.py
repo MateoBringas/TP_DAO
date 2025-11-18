@@ -1,6 +1,8 @@
 from app.models.Alquiler import Alquiler
 from app.repository.Alquiler import AlquilerRepository
 from app.repository.ClienteRepository import ClienteRepository
+from app.repository.VehiculoRepository import VehiculoRepository
+from app.repository.MantenimientoRepository import MantenimientoRepository
 from datetime import datetime
 
 def crear_alquiler_service(data: dict):
@@ -18,6 +20,20 @@ def crear_alquiler_service(data: dict):
         raise ValueError("El cliente especificado no existe")
     if not cliente.habilitado:
         raise ValueError("El cliente no está habilitado para realizar alquileres")
+
+    # Verificar que el vehículo existe y está habilitado
+    vehiculo_repo = VehiculoRepository()
+    vehiculo = vehiculo_repo.obtener_por_id(data["vehiculo_id"])
+    if not vehiculo:
+        raise ValueError("El vehículo especificado no existe")
+    if not vehiculo.habilitado:
+        raise ValueError("El vehículo no está habilitado para alquileres")
+
+    # Verificar que el vehículo no esté en mantenimiento
+    mantenimiento_repo = MantenimientoRepository()
+    en_mantenimiento = mantenimiento_repo.vehiculo_en_mantenimiento(data["vehiculo_id"])
+    if en_mantenimiento:
+        raise ValueError("El vehículo está actualmente en mantenimiento y no puede ser alquilado")
 
     repo = AlquilerRepository()
 

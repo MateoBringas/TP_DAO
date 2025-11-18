@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(python app/database/fix_reservas.py:*)",
-      "Bash(python Backend/app/database/add_vehiculo_foto.py:*)"
+      "Bash(python Backend/app/database/add_vehiculo_foto.py:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []

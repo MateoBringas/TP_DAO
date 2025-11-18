@@ -3,6 +3,7 @@ from app.repository.ReservaRepository import ReservaRepository
 from app.repository.VehiculoRepository import VehiculoRepository
 from app.repository.ClienteRepository import ClienteRepository
 from app.repository.EmpleadoRepository import EmpleadoRepository
+from app.repository.MantenimientoRepository import MantenimientoRepository
 from datetime import datetime
 
 def crear_reserva_service(data: dict):
@@ -21,6 +22,12 @@ def crear_reserva_service(data: dict):
     if not vehiculo.habilitado:
         raise ValueError("El vehículo no está habilitado para reservas")
 
+    # Verificar que el vehículo no esté en mantenimiento
+    mantenimiento_repo = MantenimientoRepository()
+    en_mantenimiento = mantenimiento_repo.vehiculo_en_mantenimiento(data["vehiculo_id"])
+    if en_mantenimiento:
+        raise ValueError("El vehículo está actualmente en mantenimiento y no puede ser reservado")
+
     # Verificar que el cliente existe y está habilitado
     cliente_repo = ClienteRepository()
     cliente = cliente_repo.obtener_por_id(data["cliente_id"])
@@ -28,6 +35,15 @@ def crear_reserva_service(data: dict):
         raise ValueError("El cliente especificado no existe")
     if not cliente.habilitado:
         raise ValueError("El cliente no está habilitado para realizar reservas")
+
+    # Verificar disponibilidad del vehículo para la fecha de alquiler
+    repo = ReservaRepository()
+    disponible = repo.verificar_disponibilidad(
+        vehiculo_id=data["vehiculo_id"],
+        fecha_alquiler=data["fecha_alquiler"]
+    )
+    if not disponible:
+        raise ValueError("El vehículo no está disponible para la fecha seleccionada. Ya existe una reserva o alquiler para ese día.")
 
     reserva = Reserva(
         cliente=data.get("cliente_id"),
@@ -40,7 +56,6 @@ def crear_reserva_service(data: dict):
         actualizado_en=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     )
 
-    repo = ReservaRepository()
     return repo.crear(reserva)
 
 

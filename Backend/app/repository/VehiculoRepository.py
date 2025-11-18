@@ -142,3 +142,58 @@ class VehiculoRepository:
             cursor.execute(query, valores)
             conn.commit()
             return vehiculo
+
+    def obtener_todos_con_estado(self) -> list[dict]:
+        """Obtiene todos los vehículos con su estado actual (disponible/alquilado/reservado/mantenimiento)"""
+        query = """
+            SELECT
+                v.*,
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM mantenimientos m
+                        WHERE m.vehiculo_id = v.id_vehiculo
+                        AND m.estado_mantenimiento IN ('PROGRAMADO', 'EN_PROGRESO')
+                        AND (m.fecha_realizada IS NULL OR date(m.fecha_realizada) >= date('now'))
+                    ) THEN 'mantenimiento'
+                    WHEN EXISTS (
+                        SELECT 1 FROM alquileres a
+                        WHERE a.vehiculo_id = v.id_vehiculo
+                        AND a.estado_alquiler_id IN (1, 2)
+                        AND date(a.fecha_inicio) <= date('now')
+                        AND (date(a.fecha_prevista) >= date('now') OR a.fecha_entrega IS NULL)
+                    ) THEN 'alquilado'
+                    WHEN EXISTS (
+                        SELECT 1 FROM reservas r
+                        WHERE r.vehiculo_id = v.id_vehiculo
+                        AND r.estado_reserva_id IN (1, 2)
+                        AND date(r.fecha_alquiler) >= date('now')
+                    ) THEN 'reservado'
+                    ELSE 'disponible'
+                END as estado_actual
+            FROM vehiculos v
+        """
+        with self._connection_factory() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query)
+            filas = cursor.fetchall()
+            vehiculos_con_estado = []
+            for fila in filas:
+                vehiculo_dict = {
+                    "id_vehiculo": fila["id_vehiculo"],
+                    "patente": fila["patente"],
+                    "marca": fila["marca"],
+                    "modelo": fila["modelo"],
+                    "anio": fila["anio"],
+                    "tarifa_base_dia": fila["tarifa_base_dia"],
+                    "km_actual": fila["km_actual"],
+                    "habilitado": bool(fila["habilitado"]),
+                    "seguro_venc": fila["seguro_venc"],
+                    "vtv_venc": fila["vtv_venc"],
+                    "km_service_cada": fila["km_service_cada"],
+                    "km_ultimo_service": fila["km_ultimo_service"],
+                    "fecha_ultimo_service": fila["fecha_ultimo_service"],
+                    "foto_url": fila["foto_url"],
+                    "estado_actual": fila["estado_actual"]
+                }
+                vehiculos_con_estado.append(vehiculo_dict)
+            return vehiculos_con_estado
