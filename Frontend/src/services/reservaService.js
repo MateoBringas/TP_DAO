@@ -1,8 +1,23 @@
 import api from './api'
 
 const reservaService = {
-  getAll: async () => {
-    const response = await api.get('/reservas/')
+  getAll: async (filters = {}) => {
+    const params = new URLSearchParams()
+
+    if (filters.estado_id) {
+      params.append('estado_id', filters.estado_id)
+    }
+    if (filters.fecha_desde) {
+      params.append('fecha_desde', filters.fecha_desde)
+    }
+    if (filters.fecha_hasta) {
+      params.append('fecha_hasta', filters.fecha_hasta)
+    }
+
+    const queryString = params.toString()
+    const url = queryString ? `/reservas/?${queryString}` : '/reservas/'
+
+    const response = await api.get(url)
     return response.data
   },
 

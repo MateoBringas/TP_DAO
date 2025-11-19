@@ -1,8 +1,23 @@
 import api from './api'
 
 const alquilerService = {
-  getAll: async () => {
-    const response = await api.get('/alquileres/')
+  getAll: async (filters = {}) => {
+    const params = new URLSearchParams()
+
+    if (filters.estado_id) {
+      params.append('estado_id', filters.estado_id)
+    }
+    if (filters.fecha_desde) {
+      params.append('fecha_desde', filters.fecha_desde)
+    }
+    if (filters.fecha_hasta) {
+      params.append('fecha_hasta', filters.fecha_hasta)
+    }
+
+    const queryString = params.toString()
+    const url = queryString ? `/alquileres/?${queryString}` : '/alquileres/'
+
+    const response = await api.get(url)
     return response.data
   },
 

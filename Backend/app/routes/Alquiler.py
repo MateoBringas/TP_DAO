@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from app.services.AlquilerService import (
     obtener_todos_alquileres_service,
+    obtener_alquileres_con_filtros_service,
     obtener_alquiler_por_id_service,
     crear_alquiler_service,
     actualizar_alquiler_service,
@@ -11,8 +12,36 @@ alquileres_bp = Blueprint("alquileres_bp", __name__, url_prefix="/alquileres")
 
 @alquileres_bp.route("/", methods=["GET"])
 def get_alquileres():
+    """
+    Obtiene alquileres con filtros opcionales.
+
+    Query Parameters:
+        estado_id (int): ID del estado de alquiler
+        fecha_desde (str): Fecha de inicio del rango (YYYY-MM-DD)
+        fecha_hasta (str): Fecha de fin del rango (YYYY-MM-DD)
+
+    Examples:
+        GET /alquileres/
+        GET /alquileres/?estado_id=1
+        GET /alquileres/?fecha_desde=2025-01-01&fecha_hasta=2025-12-31
+        GET /alquileres/?estado_id=2&fecha_desde=2025-01-01&fecha_hasta=2025-12-31
+    """
     try:
-        alquileres = obtener_todos_alquileres_service()
+        estado_id = request.args.get('estado_id', type=int)
+        fecha_desde = request.args.get('fecha_desde', type=str)
+        fecha_hasta = request.args.get('fecha_hasta', type=str)
+
+        # Si hay filtros, usar la función con filtros
+        if estado_id is not None or fecha_desde is not None or fecha_hasta is not None:
+            alquileres = obtener_alquileres_con_filtros_service(
+                estado_id=estado_id,
+                fecha_desde=fecha_desde,
+                fecha_hasta=fecha_hasta
+            )
+        else:
+            # Si no hay filtros, obtener todos
+            alquileres = obtener_todos_alquileres_service()
+
         return jsonify(alquileres), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

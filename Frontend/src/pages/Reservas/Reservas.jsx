@@ -13,14 +13,21 @@ const Reservas = () => {
   const [showModal, setShowModal] = useState(false)
   const [selectedReserva, setSelectedReserva] = useState(null)
 
+  // Estados para los filtros
+  const [filters, setFilters] = useState({
+    estado_id: '',
+    fecha_desde: '',
+    fecha_hasta: ''
+  })
+
   useEffect(() => {
     loadReservas()
   }, [])
 
-  const loadReservas = async () => {
+  const loadReservas = async (appliedFilters = {}) => {
     try {
       setLoading(true)
-      const data = await reservaService.getAll()
+      const data = await reservaService.getAll(appliedFilters)
       setReservas(data)
       setError(null)
     } catch (err) {
@@ -30,6 +37,32 @@ const Reservas = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target
+    setFilters(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleApplyFilters = () => {
+    const appliedFilters = {}
+    if (filters.estado_id) appliedFilters.estado_id = filters.estado_id
+    if (filters.fecha_desde) appliedFilters.fecha_desde = filters.fecha_desde
+    if (filters.fecha_hasta) appliedFilters.fecha_hasta = filters.fecha_hasta
+
+    loadReservas(appliedFilters)
+  }
+
+  const handleClearFilters = () => {
+    setFilters({
+      estado_id: '',
+      fecha_desde: '',
+      fecha_hasta: ''
+    })
+    loadReservas()
   }
 
   const handleCreate = () => {
@@ -109,6 +142,62 @@ const Reservas = () => {
       </div>
 
       {error && <div className="error">{error}</div>}
+
+      {/* Filtros */}
+      <div className="filters-section">
+        <h3>Filtros</h3>
+        <div className="filters-container">
+          <div className="filter-group">
+            <label htmlFor="estado_id">Estado:</label>
+            <select
+              id="estado_id"
+              name="estado_id"
+              value={filters.estado_id}
+              onChange={handleFilterChange}
+              className="filter-select"
+            >
+              <option value="">Todos los estados</option>
+              <option value="1">Pendiente</option>
+              <option value="2">Confirmada</option>
+              <option value="3">Cancelada</option>
+              <option value="4">Completada</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label htmlFor="fecha_desde">Fecha desde:</label>
+            <input
+              type="date"
+              id="fecha_desde"
+              name="fecha_desde"
+              value={filters.fecha_desde}
+              onChange={handleFilterChange}
+              className="filter-input"
+            />
+          </div>
+
+          <div className="filter-group">
+            <label htmlFor="fecha_hasta">Fecha hasta:</label>
+            <input
+              type="date"
+              id="fecha_hasta"
+              name="fecha_hasta"
+              value={filters.fecha_hasta}
+              onChange={handleFilterChange}
+              className="filter-input"
+            />
+          </div>
+
+          <div className="filter-actions">
+            <Button onClick={handleApplyFilters} variant="primary">
+              Aplicar Filtros
+            </Button>
+            <Button onClick={handleClearFilters} variant="secondary">
+              Limpiar
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <Table
         columns={columns}

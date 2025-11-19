@@ -69,8 +69,30 @@ const ReservaForm = ({ reserva, onSave, onCancel }) => {
       [name]: value
     }))
 
+     // Si cambian las fechas, recargar vehículos disponibles
+    if (name === 'fecha_reserva' || name === 'fecha_alquiler') {
+      const newFechaReserva = name === 'fecha_reserva' ? value : formData.fecha_reserva
+      const newFechaAlquiler = name === 'fecha_alquiler' ? value : formData.fecha_alquiler
+
+      if (newFechaReserva && newFechaAlquiler) {
+        loadVehiculosDisponibles(newFechaReserva, newFechaAlquiler)
+      }
+    }
+
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
+    }
+  }
+
+  const loadVehiculosDisponibles = async (fecha_reserva, fecha_alquiler) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/vehiculos/disponibles?fecha_inicio=${fecha_reserva}&fecha_prevista=${fecha_alquiler}`
+      )
+      const data = await response.json()
+      setVehiculos(data)
+    } catch (err) {
+      console.error('Error al cargar vehículos disponibles:', err)
     }
   }
 
@@ -172,6 +194,7 @@ const ReservaForm = ({ reserva, onSave, onCancel }) => {
             onChange={handleChange}
             className={`input-field ${errors.vehiculo_id ? 'input-error' : ''}`}
             required
+            disabled={formData.fecha_reserva && formData.fecha_alquiler ? false : true}
           >
             <option value="">Seleccione un vehículo</option>
             {vehiculos.map(vehiculo => (

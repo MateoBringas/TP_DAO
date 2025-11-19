@@ -65,6 +65,22 @@ def obtener_todas_reservas_service():
     return repo.obtener_todos()
 
 
+def obtener_reservas_con_filtros_service(estado_id: int = None, fecha_desde: str = None, fecha_hasta: str = None):
+    """
+    Devuelve reservas filtradas por estado y/o rango de fechas.
+
+    Args:
+        estado_id: ID del estado de reserva
+        fecha_desde: Fecha de inicio del rango (YYYY-MM-DD)
+        fecha_hasta: Fecha de fin del rango (YYYY-MM-DD)
+
+    Returns:
+        Lista de reservas filtradas
+    """
+    repo = ReservaRepository()
+    return repo.obtener_con_filtros(estado_id=estado_id, fecha_desde=fecha_desde, fecha_hasta=fecha_hasta)
+
+
 def obtener_reserva_por_id_service(id_reserva: int):
     """Obtiene una reserva por su ID."""
     repo = ReservaRepository()

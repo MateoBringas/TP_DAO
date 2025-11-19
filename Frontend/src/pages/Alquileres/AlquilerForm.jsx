@@ -188,6 +188,7 @@ const AlquilerForm = ({ alquiler, onSave, onCancel }) => {
             onChange={handleChange}
             className={`input-field ${errors.vehiculo_id ? 'input-error' : ''}`}
             required
+            disabled={formData.fecha_inicio && formData.fecha_prevista ? false : true}
           >
             <option value="">Seleccione un vehículo</option>
             {vehiculos.map(vehiculo => (

@@ -173,6 +173,82 @@ class AlquilerRepository:
             conn.commit()
             return cursor.rowcount > 0
 
+    def obtener_con_filtros(self, estado_id: int = None, fecha_desde: str = None, fecha_hasta: str = None) -> list[dict]:
+        """
+        Obtiene alquileres con filtros opcionales de estado y rango de fechas.
+
+        Args:
+            estado_id: ID del estado de alquiler para filtrar
+            fecha_desde: Fecha de inicio del rango (formato: YYYY-MM-DD)
+            fecha_hasta: Fecha de fin del rango (formato: YYYY-MM-DD)
+
+        Returns:
+            Lista de diccionarios con información de alquileres filtrados
+        """
+        query = """
+            SELECT
+                a.*,
+                c.nombre as cliente_nombre,
+                c.apellido as cliente_apellido,
+                c.dni as cliente_dni,
+                v.patente as vehiculo_patente,
+                v.marca as vehiculo_marca,
+                v.modelo as vehiculo_modelo,
+                ea.codigo as estado_nombre
+            FROM alquileres a
+            LEFT JOIN clientes c ON a.cliente_id = c.id_cliente
+            LEFT JOIN vehiculos v ON a.vehiculo_id = v.id_vehiculo
+            LEFT JOIN estados_alquiler ea ON a.estado_alquiler_id = ea.id_estado_alquiler
+            WHERE 1=1
+        """
+
+        params = []
+
+        if estado_id is not None:
+            query += " AND a.estado_alquiler_id = ?"
+            params.append(estado_id)
+
+        if fecha_desde is not None:
+            query += " AND date(a.fecha_inicio) >= date(?)"
+            params.append(fecha_desde)
+
+        if fecha_hasta is not None:
+            query += " AND date(a.fecha_inicio) <= date(?)"
+            params.append(fecha_hasta)
+
+        query += " ORDER BY a.fecha_inicio DESC"
+
+        with self._connection_factory() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            filas = cursor.fetchall()
+            alquileres = []
+
+            for fila in filas:
+                alquiler_dict = {
+                    "id_alquiler": fila["id_alquiler"],
+                    "cliente_id": fila["cliente_id"],
+                    "cliente_nombre_completo": f"{fila['cliente_nombre']} {fila['cliente_apellido']}" if fila['cliente_nombre'] else "N/A",
+                    "cliente_dni": fila["cliente_dni"],
+                    "vehiculo_id": fila["vehiculo_id"],
+                    "vehiculo_descripcion": f"{fila['vehiculo_marca']} {fila['vehiculo_modelo']} - {fila['vehiculo_patente']}" if fila['vehiculo_marca'] else "N/A",
+                    "empleado_id": fila["empleado_id"],
+                    "estado_alquiler_id": fila["estado_alquiler_id"],
+                    "estado_nombre": fila["estado_nombre"],
+                    "reserva_id": fila["reserva_id"],
+                    "fecha_inicio": fila["fecha_inicio"],
+                    "fecha_prevista": fila["fecha_prevista"],
+                    "fecha_entrega": fila["fecha_entrega"],
+                    "km_salida": fila["km_salida"],
+                    "km_entrada": fila["km_entrada"],
+                    "observaciones": fila["observaciones"],
+                    "creado_en": fila["creado_en"],
+                    "actualizado_en": fila["actualizado_en"]
+                }
+                alquileres.append(alquiler_dict)
+
+            return alquileres
+
     def verificar_disponibilidad(self, vehiculo_id: int, fecha_inicio: str, fecha_prevista: str, excluir_alquiler_id: int = None) -> bool:
         """
         Verifica si un vehículo está disponible en un rango de fechas.

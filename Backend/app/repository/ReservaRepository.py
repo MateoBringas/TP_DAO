@@ -85,6 +85,77 @@ class ReservaRepository:
 
             return reservas
 
+    def obtener_con_filtros(self, estado_id: int = None, fecha_desde: str = None, fecha_hasta: str = None) -> list[dict]:
+        """
+        Obtiene reservas con filtros opcionales de estado y rango de fechas.
+
+        Args:
+            estado_id: ID del estado de reserva para filtrar
+            fecha_desde: Fecha de inicio del rango (formato: YYYY-MM-DD)
+            fecha_hasta: Fecha de fin del rango (formato: YYYY-MM-DD)
+
+        Returns:
+            Lista de diccionarios con información de reservas filtradas
+        """
+        query = """
+            SELECT
+                r.*,
+                c.nombre as cliente_nombre,
+                c.apellido as cliente_apellido,
+                c.dni as cliente_dni,
+                v.patente as vehiculo_patente,
+                v.marca as vehiculo_marca,
+                v.modelo as vehiculo_modelo,
+                er.codigo as estado_nombre
+            FROM reservas r
+            LEFT JOIN clientes c ON r.cliente_id = c.id_cliente
+            LEFT JOIN vehiculos v ON r.vehiculo_id = v.id_vehiculo
+            LEFT JOIN estados_reserva er ON r.estado_reserva_id = er.id_estado_reserva
+            WHERE 1=1
+        """
+
+        params = []
+
+        if estado_id is not None:
+            query += " AND r.estado_reserva_id = ?"
+            params.append(estado_id)
+
+        if fecha_desde is not None:
+            query += " AND date(r.fecha_alquiler) >= date(?)"
+            params.append(fecha_desde)
+
+        if fecha_hasta is not None:
+            query += " AND date(r.fecha_alquiler) <= date(?)"
+            params.append(fecha_hasta)
+
+        query += " ORDER BY r.fecha_reserva DESC"
+
+        with self._connection_factory() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            filas = cursor.fetchall()
+            reservas = []
+
+            for fila in filas:
+                reserva_dict = {
+                    "id_reserva": fila["id_reserva"],
+                    "cliente_id": fila["cliente_id"],
+                    "cliente_nombre_completo": f"{fila['cliente_nombre']} {fila['cliente_apellido']}" if fila['cliente_nombre'] else "N/A",
+                    "cliente_dni": fila["cliente_dni"],
+                    "vehiculo_id": fila["vehiculo_id"],
+                    "vehiculo_descripcion": f"{fila['vehiculo_marca']} {fila['vehiculo_modelo']} - {fila['vehiculo_patente']}" if fila['vehiculo_marca'] else "N/A",
+                    "empleado_id": fila["empleado_id"],
+                    "estado_reserva_id": fila["estado_reserva_id"],
+                    "estado_nombre": fila["estado_nombre"],
+                    "fecha_reserva": fila["fecha_reserva"],
+                    "fecha_alquiler": fila["fecha_alquiler"],
+                    "senia_monto": fila["senia_monto"],
+                    "actualizado_en": fila["actualizado_en"]
+                }
+                reservas.append(reserva_dict)
+
+            return reservas
+
     def verificar_disponibilidad(self, vehiculo_id: int, fecha_alquiler: str, excluir_reserva_id: int = None) -> bool:
         """
         Verifica si un vehículo está disponible para una fecha de alquiler específica.
